@@ -1,0 +1,7 @@
+inventory/*
+!inventory/ansible-admin
+inventory/ansible-admin/host_vars/localhost/*
+
+delegate-admin-details/*
+
+*.swp

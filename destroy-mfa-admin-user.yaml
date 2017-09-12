@@ -1,0 +1,50 @@
+---
+- hosts: localhost
+  tasks:
+    - set_fact:
+        user_name: "ansible-admin"
+    - name: "Check MFA Tokens"
+      iam_mfa_device_facts:
+        user_name: "{{ user_name }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+      register: mfa_devices
+    - assert:
+        that: mfa_devices.mfa_devices|length == 0
+        msg: "You must first remove the MFA token from {{ user_name }} in the AWS console"
+    - name: "Ansible User"
+      iam:
+        iam_type: user
+        name: "{{ user_name }}"
+        state: absent
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+    - name: "Find IAM Policies"
+      iam_policy:
+        iam_type: role
+        iam_name: "ansible-full-access"
+        policy_name: deny-all
+        policy_json: "{{ lookup('template', 'templates/iam_policy/deny_all.json.j2') }}"
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+      register: iam_policy_info
+    - name: "Remove IAM Policies"
+      iam_policy:
+        iam_type: role
+        iam_name: "ansible-full-access"
+        policy_name: "{{ item }}"
+        state: absent
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+      with_items: "{{ iam_policy_info.policies }}"
+    - name: "Full Access Role"
+      iam_role:
+        name: "ansible-full-access"
+        state: absent
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"

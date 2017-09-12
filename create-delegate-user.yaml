@@ -1,0 +1,65 @@
+---
+- include: includes/assume_role.yaml
+- hosts: localhost
+  vars_prompt:
+    - name: env_prefix
+      private: false
+    - name: mfa_required_prompt
+      default: true
+      private: false
+  tasks:
+    - set_fact:
+        mfa_required: "{{ mfa_required_prompt|bool }}"
+    - name: "Ansible User"
+      iam:
+        iam_type: user
+        name: "{{ env_prefix }}-ansible-admin"
+        access_key_state: create
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"
+      register: ansible_user_info
+    - name: "{{ env_prefix }} dir"
+      file:
+        state: directory
+        path: "{{ playbook_dir }}/{{ env_prefix }}"
+    - name: "vault.yaml"
+      template:
+        src: templates/vault.yaml.j2
+        dest: "{{ playbook_dir }}/{{ env_prefix }}/vault.yaml"
+        mode: 0600
+      when: ansible_user_info.changed
+    - name: "Full Access Role"
+      iam_role:
+        name: "{{ env_prefix }}-ansible-full-access"
+        state: present
+        assume_role_policy_document: "{{ lookup('template', 'templates/iam_policy/assume_role.json.j2') }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"
+      register: full_access_role_info
+      when: ansible_user_info.changed
+      until: full_access_role_info.failed|default(false) != true
+      retries: 3
+      delay: 2
+    - name: "vars.yaml"
+      template:
+        src: templates/vars.yaml.j2
+        dest: "{{ playbook_dir }}/{{ env_prefix }}/vars.yaml"
+      when: ansible_user_info.changed
+
+
+    - name: "Full Access Role Policy"
+      iam_policy:
+        iam_type: role
+        iam_name: "{{ env_prefix }}-ansible-full-access"
+        policy_name: full_access
+        policy_json: "{{ lookup('template', 'templates/iam_policy/scoped_access.json.j2') }}"
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"

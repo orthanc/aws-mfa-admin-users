@@ -1,0 +1,51 @@
+---
+- hosts: localhost
+  vars:
+    mfa_required: true
+  tasks:
+    - name: "Ansible User"
+      iam:
+        iam_type: user
+        name: "ansible-admin"
+        access_key_state: create
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+      register: ansible_user_info
+    - name: "Full Access Role"
+      iam_role:
+        name: "ansible-full-access"
+        state: present
+        assume_role_policy_document: "{{ lookup('template', 'templates/iam_policy/assume_role.json.j2') }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+      register: full_access_role_info
+      until: full_access_role_info.failed|default(false) != true
+      retries: 3
+      delay: 2
+    - name: "Full Access Role Policy"
+      iam_policy:
+        iam_type: role
+        iam_name: "ansible-full-access"
+        policy_name: full_access
+        policy_json: "{{ lookup('template', 'templates/iam_policy/full_access.json.j2') }}"
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+    - name: "Create ansible-admin inventory"
+      file:
+        path: "{{ playbook_dir }}/inventory/ansible-admin/host_vars/localhost"
+        state: directory
+    - name: "vault.yaml"
+      template:
+        src: templates/vault.yaml.j2
+        dest: "{{ playbook_dir }}/inventory/ansible-admin/host_vars/localhost/vault.yaml"
+        mode: 0600
+      when: ansible_user_info.changed
+    - name: "vars.yaml"
+      template:
+        src: templates/vars.yaml.j2
+        dest: "{{ playbook_dir }}/inventory/ansible-admin/host_vars/localhost/vars.yaml"

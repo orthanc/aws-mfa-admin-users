@@ -1,0 +1,7 @@
+---
+aws_region: {{ aws_region }}
+mfa_token_arn: "{{  ansible_user_info.user_meta.created_user.arn|replace("user/", "mfa/") if mfa_required else "" }}"
+full_access_role_arn: "{{ full_access_role_info.iam_role.arn }}"
+
+ansible_connection: local
+gather_facts: false
