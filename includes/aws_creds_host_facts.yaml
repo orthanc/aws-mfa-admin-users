@@ -1,0 +1,8 @@
+---
+- hosts: aws_control:!localhost
+  tasks:
+    - name: "Setup Temporary Credentials"
+      set_fact:
+        aws_access_key: "{{ hostvars['localhost'].aws_access_key }}"
+        aws_secret_key: "{{ hostvars['localhost'].aws_secret_key }}"
+        security_token: "{{ hostvars['localhost'].security_token }}"
