@@ -1,6 +1,7 @@
 inventory/*
+!inventory/template
 !inventory/ansible-admin
-inventory/ansible-admin/host_vars/localhost/*
+inventory/ansible-admin/group_vars/aws_control/aws_creds_*
 
 delegate-admin-details/*
 

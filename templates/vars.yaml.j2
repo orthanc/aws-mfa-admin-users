@@ -1,7 +1,9 @@
 ---
+{% if env_prefix is defined %}
+env_prefix: "{{ env_prefix }}"
+{% endif %}
 aws_region: {{ aws_region }}
-mfa_token_arn: "{{  ansible_user_info.user_meta.created_user.arn|replace("user/", "mfa/") if mfa_required else "" }}"
-full_access_role_arn: "{{ full_access_role_info.iam_role.arn }}"
+mfa_token_arn: "{{  aws_creds_vault.vault_aws_user_arn|replace("user/", "mfa/") if mfa_required else "" }}"
 
-ansible_connection: local
-gather_facts: false
+static_aws_access_key: {{ '"{{ vault_static_aws_access_key }}"' }}
+static_aws_secret_key: {{ '"{{ vault_static_aws_secret_key }}"' }}

@@ -1,0 +1,21 @@
+- hosts: localhost
+  vars_prompt:
+    - name: mfa_code
+      private: false
+  tasks:
+    - sts_session_token:
+        duration_seconds: 900
+        region: "{{ aws_region }}"
+        mfa_serial_number: "{{ mfa_token_arn }}"
+        mfa_token: "{{ mfa_code }}"
+        aws_access_key: "{{ static_aws_access_key }}"
+        aws_secret_key: "{{ static_aws_secret_key }}"
+      register: session_creds
+      changed_when: False
+      no_log: True
+    - name: "Setup Temporary Credentials"
+      set_fact:
+        aws_access_key: "{{ session_creds.sts_creds.access_key }}"
+        aws_secret_key: "{{ session_creds.sts_creds.secret_key }}"
+        security_token: "{{ session_creds.sts_creds.session_token }}"
+      no_log: True

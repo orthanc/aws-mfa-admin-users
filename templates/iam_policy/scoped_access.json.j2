@@ -6,7 +6,55 @@
       "Action": "*",
       "Resource": [
         "arn:aws:s3:::{{ env_prefix }}-*",
-        "arn:aws:iam::*:user/{{ env_prefix }}-*"
+        "arn:aws:sqs:{{ aws_region }}:*:{{ env_prefix }}-*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:ListGroups",
+        "iam:ListInstanceProfiles",
+        "iam:ListRoles",
+        "iam:ListUsers"
+      ],
+      "Resource": [
+        "arn:aws:iam::*:group/",
+        "arn:aws:iam::*:instance-profile/",
+        "arn:aws:iam::*:role/",
+        "arn:aws:iam::*:user/"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:ChangePassword",
+        "iam:CreateAccessKey",
+        "iam:CreateUser",
+        "iam:DeleteAccessKey",
+        "iam:DeleteUser",
+        "iam:GetInstanceProfile",
+        "iam:GetGroup",
+        "iam:GetGroupPolicy",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:GetUser",
+        "iam:GetUserPolicy",
+        "iam:ListAccessKeys",
+        "iam:ListAttachedGroupPolicies",
+        "iam:ListAttachedUserPolicies",
+        "iam:ListEntitiesForPolicy",
+        "iam:ListGroupPolicies",
+        "iam:ListGroupsForUser",
+        "iam:ListPolicyVersions",
+        "iam:ListUserPolicies",
+        "iam:UpdateAccessKey",
+        "iam:UpdateUser"
+      ],
+      "Resource": [
+        "arn:aws:iam::*:group/{{ env_prefix }}-*",
+        "arn:aws:iam::*:instance-profile/{{ env_prefix }}-*",
+        "arn:aws:iam::*:user/{{ env_prefix }}-*",
+        "arn:aws:iam::*:policy/{{ env_prefix }}-*"
       ]
     }
   ]

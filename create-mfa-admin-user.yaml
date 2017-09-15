@@ -13,39 +13,45 @@
         aws_access_key: "{{ aws_access_key }}"
         aws_secret_key: "{{ aws_secret_key }}"
       register: ansible_user_info
-    - name: "Full Access Role"
-      iam_role:
-        name: "ansible-full-access"
-        state: present
-        assume_role_policy_document: "{{ lookup('template', 'templates/iam_policy/assume_role.json.j2') }}"
-        region: "{{ aws_region }}"
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-      register: full_access_role_info
-      until: full_access_role_info.failed|default(false) != true
-      retries: 3
-      delay: 2
-    - name: "Full Access Role Policy"
-      iam_policy:
-        iam_type: role
-        iam_name: "ansible-full-access"
-        policy_name: full_access
-        policy_json: "{{ lookup('template', 'templates/iam_policy/full_access.json.j2') }}"
-        state: present
-        region: "{{ aws_region }}"
-        aws_access_key: "{{ aws_access_key }}"
-        aws_secret_key: "{{ aws_secret_key }}"
-    - name: "Create ansible-admin inventory"
-      file:
-        path: "{{ playbook_dir }}/inventory/ansible-admin/host_vars/localhost"
-        state: directory
+      no_log: True
     - name: "vault.yaml"
       template:
         src: templates/vault.yaml.j2
-        dest: "{{ playbook_dir }}/inventory/ansible-admin/host_vars/localhost/vault.yaml"
+        dest: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vault.yaml"
         mode: 0600
       when: ansible_user_info.changed
+    - name: "Load Vault"
+      include_vars:
+        file: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vault.yaml"
+        name: aws_creds_vault
+      no_log: True
+    - name: "User Policies"
+      iam_policy:
+        iam_type: user
+        iam_name: "ansible-admin"
+        policy_name: "{{ item }}"
+        policy_json: "{{ lookup('template', 'templates/iam_policy/'+item+'.json.j2') }}"
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+      with_items:
+        - require_https
+        - require_mfa
+        - full_access
     - name: "vars.yaml"
       template:
         src: templates/vars.yaml.j2
-        dest: "{{ playbook_dir }}/inventory/ansible-admin/host_vars/localhost/vars.yaml"
+        dest: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vars.yaml"
+    - debug:
+        msg: |
+          ansible-admin user created in AWS account, this user must use MFA to get a temporary STS token.
+          When authenticated with a MFA token this user has full admin rights to the account.
+          
+          You must assign an MFA device to the ansible-admin user in the AWS console. Ensure the ARN is correct in
+          {{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vars.yaml
+          
+          API Access Keys for this user are in:
+          {{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vault.yaml
+          
+          You really should encrypt this file with ansible-vault.
