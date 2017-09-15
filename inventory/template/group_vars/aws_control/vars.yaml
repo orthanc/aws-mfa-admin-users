@@ -1,0 +1,9 @@
+aws_region: SELECT_REGION
+# The AWS authentication details used when deploying and destroying infrastructure.
+# Rather than setting these inline, add a vault.yaml file defining the vault_*
+# keys and protect this with ansible-vault to prevent loss of these keys
+aws_access_key: "{{ vault_aws_access_key }}"
+aws_secret_key: "{{ vault_aws_secret_key }}"
+
+gather_facts: false
+ansible_connection: local
