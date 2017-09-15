@@ -30,11 +30,17 @@
         dest: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vault.yaml"
         mode: 0600
       when: ansible_user_info.changed
-    - name: "Load Vault"
+    - name: "Load Existing Vars"
       include_vars:
-        file: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vault.yaml"
-        name: aws_creds_vault
-      no_log: True
+        file: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vars.yaml"
+        name: aws_creds_vars
+    - name: "Set User ARN"
+      set_fact:
+        aws_creds_user_arn: "{{ ansible_user_info.user_meta.created_user.arn if ansible_user_info.changed else aws_creds_vars.aws_user_arn }}"
+    - name: "vars.yaml"
+      template:
+        src: templates/vars.yaml.j2
+        dest: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vars.yaml"
     - name: "User Policies"
       iam_policy:
         iam_type: user
@@ -52,10 +58,6 @@
         scoped_access: present
       loop_control:
         label: "{{ item.key }}"
-    - name: "vars.yaml"
-      template:
-        src: templates/vars.yaml.j2
-        dest: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vars.yaml"
 
     - debug:
         msg: |

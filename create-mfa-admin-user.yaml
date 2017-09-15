@@ -20,11 +20,19 @@
         dest: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vault.yaml"
         mode: 0600
       when: ansible_user_info.changed
-    - name: "Load Vault"
-      include_vars:
-        file: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vault.yaml"
         name: aws_creds_vault
       no_log: True
+    - name: "Load Existing Vars"
+      include_vars:
+        file: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vars.yaml"
+        name: aws_creds_vars
+    - name: "Set User ARN"
+      set_fact:
+        aws_creds_user_arn: "{{ ansible_user_info.user_meta.created_user.arn if ansible_user_info.changed else aws_creds_vars.aws_user_arn }}"
+    - name: "vars.yaml"
+      template:
+        src: templates/vars.yaml.j2
+        dest: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vars.yaml"
     - name: "User Policies"
       iam_policy:
         iam_type: user
@@ -39,10 +47,6 @@
         - require_https
         - require_mfa
         - full_access
-    - name: "vars.yaml"
-      template:
-        src: templates/vars.yaml.j2
-        dest: "{{ playbook_dir }}/inventory/ansible-admin/group_vars/aws_control/aws_creds_vars.yaml"
     - debug:
         msg: |
           ansible-admin user created in AWS account, this user must use MFA to get a temporary STS token.
