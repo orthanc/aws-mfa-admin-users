@@ -24,19 +24,22 @@
       file:
         state: directory
         path: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}"
+    - name: "Check if AWS Creds Changed"
+      set_fact:
+        aws_creds_changed: "{{ ansible_user_info.changed and ansible_user_info.user_meta is defined }}"
     - name: "vault.yaml"
       template:
         src: templates/vault.yaml.j2
         dest: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vault.yaml"
         mode: 0600
-      when: ansible_user_info.changed
+      when: aws_creds_changed
     - name: "Load Existing Vars"
       include_vars:
         file: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vars.yaml"
         name: aws_creds_vars
     - name: "Set User ARN"
       set_fact:
-        aws_creds_user_arn: "{{ ansible_user_info.user_meta.created_user.arn if ansible_user_info.changed else aws_creds_vars.aws_user_arn }}"
+        aws_creds_user_arn: "{{ ansible_user_info.user_meta.created_user.arn if aws_creds_changed else aws_creds_vars.aws_user_arn }}"
     - name: "vars.yaml"
       template:
         src: templates/vars.yaml.j2
