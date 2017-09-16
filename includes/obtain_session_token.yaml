@@ -3,11 +3,14 @@
     - name: mfa_code
       private: false
   tasks:
+    - name: "Check if MFA Token Provided"
+      set_fact:
+        mfa_provided: "{{ mfa_code != '' }}"
     - sts_session_token:
         duration_seconds: 900
         region: "{{ aws_region }}"
-        mfa_serial_number: "{{ mfa_token_arn }}"
-        mfa_token: "{{ mfa_code }}"
+        mfa_serial_number: "{{ mfa_token_arn if mfa_provided else omit }}"
+        mfa_token: "{{ mfa_code if mfa_provided else omit }}"
         aws_access_key: "{{ static_aws_access_key }}"
         aws_secret_key: "{{ static_aws_secret_key }}"
       register: session_creds
@@ -18,4 +21,7 @@
         aws_access_key: "{{ session_creds.sts_creds.access_key }}"
         aws_secret_key: "{{ session_creds.sts_creds.secret_key }}"
         security_token: "{{ session_creds.sts_creds.session_token }}"
+        iam_aws_access_key: "{{ session_creds.sts_creds.access_key if mfa_provided else static_aws_access_key }}"
+        iam_aws_secret_key: "{{ session_creds.sts_creds.secret_key if mfa_provided else static_aws_secret_key }}"
+        iam_security_token: "{{ session_creds.sts_creds.session_token if mfa_provided else omit }}"
       no_log: True
