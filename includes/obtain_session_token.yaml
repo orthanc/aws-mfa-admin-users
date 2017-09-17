@@ -1,11 +1,18 @@
 - hosts: localhost
-  vars_prompt:
-    - name: mfa_code
-      private: false
   tasks:
+    - name: "Get mfa_code"
+      pause:
+        prompt: mfa_code
+      register: mfa_code_prompt
+      when: mfa_code is not defined and security_token is not defined
+    - name: "Set mfa_code"
+      set_fact:
+        mfa_code: "{{ mfa_code_prompt.user_input }}"
+      when: mfa_code is not defined and security_token is not defined
     - name: "Check if MFA Token Provided"
       set_fact:
         mfa_provided: "{{ mfa_code != '' }}"
+      when: security_token is not defined
     - sts_session_token:
         duration_seconds: 900
         region: "{{ aws_region }}"
@@ -14,6 +21,7 @@
         aws_access_key: "{{ static_aws_access_key }}"
         aws_secret_key: "{{ static_aws_secret_key }}"
       register: session_creds
+      when: security_token is not defined
       changed_when: False
       no_log: True
     - name: "Setup Temporary Credentials"
@@ -25,3 +33,4 @@
         iam_aws_secret_key: "{{ session_creds.sts_creds.secret_key if mfa_provided else static_aws_secret_key }}"
         iam_security_token: "{{ session_creds.sts_creds.session_token if mfa_provided else omit }}"
       no_log: True
+      when: security_token is not defined
