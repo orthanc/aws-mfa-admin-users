@@ -1,0 +1,100 @@
+---
+- include: includes/obtain_session_token.yaml
+- hosts: localhost
+  vars_prompt:
+    - name: base_username
+      private: false
+    - name: env_prefix
+      private: false
+    - name: mfa_required
+      default: true
+      private: false
+  tasks:
+    - name: "MfaRequiredFullAdministrator Group"
+      iam:
+        name: MfaRequiredFullAdministrator
+        iam_type: group
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ iam_aws_access_key }}"
+        aws_secret_key: "{{ iam_aws_secret_key }}"
+        security_token: "{{ iam_security_token|default(omit) }}"
+    - name: "MfaRequiredFullAdministrator Group Policies"
+      iam_policy:
+        iam_type: group
+        iam_name: MfaRequiredFullAdministrator
+        policy_name: "{{ item }}"
+        policy_json: "{{ lookup('template', 'templates/iam_policy/'+item+'.json.j2') }}"
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ iam_aws_access_key }}"
+        aws_secret_key: "{{ iam_aws_secret_key }}"
+        security_token: "{{ iam_security_token|default(omit) }}"
+      with_items:
+        - require_https
+        - require_mfa
+        - full_access
+    - name: "Environment LimitedAdministrator Group"
+      iam:
+        name: "{{ env_prefix }}-LimitedAdministrator"
+        iam_type: group
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ iam_aws_access_key }}"
+        aws_secret_key: "{{ iam_aws_secret_key }}"
+        security_token: "{{ iam_security_token|default(omit) }}"
+    - name: "Environment LimitedAdministrator Group Policies"
+      iam_policy:
+        iam_type: group
+        iam_name: "{{ env_prefix }}-LimitedAdministrator"
+        policy_name: "{{ item.key }}"
+        policy_json: "{{ lookup('template', 'templates/iam_policy/' + item.key + '.json.j2') }}"
+        state: "{{ item.value }}"
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ iam_aws_access_key }}"
+        aws_secret_key: "{{ iam_aws_secret_key }}"
+        security_token: "{{ iam_security_token|default(omit) }}"
+      with_dict:
+        require_https: present
+        require_mfa: "{{ 'present' if mfa_required|bool else 'absent' }}"
+        scoped_access: present
+      loop_control:
+        label: "{{ item.key }}"
+    - name: "Ansible User"
+      iam:
+        iam_type: user
+        name: "{{ base_username}}-{{ env_prefix }}-ansible-admin"
+        groups:
+          - "{{ env_prefix }}-LimitedAdministrator"
+        access_key_state: create
+        state: present
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ iam_aws_access_key }}"
+        aws_secret_key: "{{ iam_aws_secret_key }}"
+        security_token: "{{ iam_security_token|default(omit) }}"
+      register: ansible_user_info
+      no_log: True
+    - name: "delegate-admin-details/{{ env_prefix }} dir"
+      file:
+        state: directory
+        path: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}"
+    - name: "Check if AWS Creds Changed"
+      set_fact:
+        aws_creds_changed: "{{ ansible_user_info.changed and ansible_user_info.user_meta is defined }}"
+    - name: "vault.yaml"
+      template:
+        src: templates/vault.yaml.j2
+        dest: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vault.yaml"
+        mode: 0600
+      when: aws_creds_changed
+    - name: "Load Existing Vars"
+      include_vars:
+        file: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vars.yaml"
+        name: aws_creds_vars
+    - name: "Set User ARN"
+      set_fact:
+        aws_creds_user_arn: "{{ ansible_user_info.user_meta.created_user.arn if aws_creds_changed else aws_creds_vars.aws_user_arn }}"
+    - name: "vars.yaml"
+      template:
+        src: templates/vars.yaml.j2
+        dest: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/aws_creds_vars.yaml"
