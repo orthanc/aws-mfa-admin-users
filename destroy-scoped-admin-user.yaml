@@ -1,0 +1,21 @@
+---
+- import_playbook: includes/obtain_session_token.yaml
+  vars:
+    aws_default_region: "{{ aws_connect_region }}"
+- import_playbook: includes/aws_creds_host_facts.yaml
+
+- hosts: aws_user
+  tasks:
+    - name: "Ansible User"
+      iam:
+        iam_type: user
+        name: "{{ inventory_hostname }}-{{ env_prefix }}"
+        state: absent
+        region: "{{ aws_connect_region }}"
+        aws_access_key: "{{ iam_aws_access_key }}"
+        aws_secret_key: "{{ iam_aws_secret_key }}"
+        security_token: "{{ iam_security_token|default(omit) }}"
+    - name: "delegate-admin-details/{{ env_prefix }}/{{ username }} dir"
+      file:
+        state: absent
+        path: "{{ playbook_dir }}/delegate-admin-details/{{ env_prefix }}/{{ inventory_hostname }}"

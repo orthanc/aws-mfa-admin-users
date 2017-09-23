@@ -15,7 +15,7 @@
       when: security_token is not defined
     - sts_session_token:
         duration_seconds: 900
-        region: "{{ aws_region }}"
+        region: "{{ aws_default_region }}"
         mfa_serial_number: "{{ mfa_token_arn if mfa_provided else omit }}"
         mfa_token: "{{ mfa_code if mfa_provided else omit }}"
         aws_access_key: "{{ static_aws_access_key }}"

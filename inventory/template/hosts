@@ -1,2 +1,8 @@
 [aws_control]
 localhost
+
+[aws_user]
+example-user
+
+[aws_control:children]
+aws_user

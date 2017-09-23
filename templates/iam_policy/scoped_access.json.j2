@@ -6,9 +6,11 @@
       "Effect": "Allow",
       "Action": "*",
       "Resource": [
-        "arn:aws:s3:::{{ env_prefix }}-*",
-        "arn:aws:sqs:{{ aws_region }}:*:{{ env_prefix }}-*",
-        "arn:aws:sns:{{ aws_region }}:*:{{ env_prefix }}-*"
+        "arn:aws:s3:::{{ env_prefix }}-*"
+        {% for region in aws_allowed_regions %},
+        "arn:aws:sqs:{{ region }}:*:{{ env_prefix }}-*",
+        "arn:aws:sns:{{ region }}:*:{{ env_prefix }}-*"
+        {% endfor %}
       ]
     },
     {

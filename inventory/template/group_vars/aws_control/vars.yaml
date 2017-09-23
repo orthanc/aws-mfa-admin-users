@@ -1,9 +1,34 @@
-aws_region: SELECT_REGION
+# The prefix indicating the logical environment created users can modify. The created
+# users are limited to modifying resources that start with this prefix followed by -
+env_prefix: dev
+
+# The regions that created users are allowed to interact with. For any region scoped
+# resources the created users can only access resources in these regions
+aws_allowed_regions:
+  - ap-southeast-1
+  - ap-southeast-2
+  - ap-southeast-3
+
+# Whether Multi Factor Authentication is required for the created users to do anything
+# if this is false then the access tokens generated can be directly used to access
+# resources. If this is true then the access tokens must be combined with an MFA
+# token and swapped for a temporary access key
+# session token 
+mfa_required: false
+
+# The region to connect to to work with IAM
+aws_connect_region: us-west-1
+
+# The ARN of the MFA token of the admin user that's used to create other users
+mfa_token_arn: arn:aws:iam::ACCOUNT_ID:mfa/USER_NAME
+
 # The AWS authentication details used when deploying and destroying infrastructure.
 # Rather than setting these inline, add a vault.yaml file defining the vault_*
 # keys and protect this with ansible-vault to prevent loss of these keys
-aws_access_key: "{{ vault_aws_access_key }}"
-aws_secret_key: "{{ vault_aws_secret_key }}"
+static_aws_access_key: "{{ vault_static_aws_access_key }}"
+static_aws_secret_key: "{{ vault_static_aws_secret_key }}"
 
-gather_facts: false
+# Connection detail setup since all AWS modification actually happens on localhost
 ansible_connection: local
+gather_facts: false
+ansible_python_interpreter: python
