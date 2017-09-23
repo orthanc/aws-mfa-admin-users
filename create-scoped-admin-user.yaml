@@ -3,7 +3,7 @@
   vars:
     aws_default_region: "{{ aws_connect_region }}"
 - import_playbook: includes/aws_creds_host_facts.yaml
-- hosts: localhost
+- hosts: aws_user
   tasks:
     - name: "Environment LimitedAdministrator Group"
       iam:
@@ -14,6 +14,7 @@
         aws_access_key: "{{ iam_aws_access_key }}"
         aws_secret_key: "{{ iam_aws_secret_key }}"
         security_token: "{{ iam_security_token|default(omit) }}"
+      run_once: True
     - name: "Environment LimitedAdministrator Group Policies"
       iam_policy:
         iam_type: group
@@ -31,10 +32,7 @@
         scoped_access: present
       loop_control:
         label: "{{ item.key }}"
-
-
-- hosts: aws_user
-  tasks:
+      run_once: True
     - name: "Ansible User"
       iam:
         iam_type: user

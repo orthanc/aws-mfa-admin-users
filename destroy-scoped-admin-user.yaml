@@ -6,6 +6,14 @@
 
 - hosts: aws_user
   tasks:
+    - name: "Confirm Delete"
+      pause:
+        prompt: "Are you sure you want to delete users {{ ansible_play_hosts|join(', ') }} ? Type YES to confirm."
+      register: confirm_prompt
+      run_once: True
+    - fail:
+      when: confirm_prompt.user_input != 'YES'
+      run_once: True
     - name: "Ansible User"
       iam:
         iam_type: user
