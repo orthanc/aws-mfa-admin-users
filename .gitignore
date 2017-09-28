@@ -1,6 +1,9 @@
 inventory/*
 !inventory/template
 
-delegate-admin-details/*
+vaults/*
+!vaults/template_aws_creds.yaml
+
+env-admin-details/*
 
 *.swp

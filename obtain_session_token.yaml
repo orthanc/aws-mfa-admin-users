@@ -1,0 +1,56 @@
+- hosts: "aws_control:&{{ limit_hosts|default('all') }}"
+  gather_facts: False
+  tasks:
+    - name: Check existing token age
+      find:
+        age: -1h
+        paths: "{{ inventory_dir }}/group_vars/aws_control"
+        pattern: "aws_sts_token.yaml"
+      run_once: True
+      delegate_to: localhost
+      delegate_facts: True
+      register: sts_token_file_info
+    - block:
+        - name: "Get mfa_code"
+          block:
+            - pause:
+                prompt: mfa_code
+              register: mfa_code_prompt
+              run_once: True
+            - set_fact:
+                mfa_code: "{{ mfa_code_prompt.user_input }}"
+              run_once: True
+          when: mfa_code is not defined
+        - name: Load static access keys
+          include_vars: "{{ static_aws_key_vault }}"
+          no_log: True
+          run_once: True
+        - sts_session_token:
+            duration_seconds: 4500
+            region: "{{ aws_default_region }}"
+            mfa_serial_number: "{{ mfa_token_arn }}"
+            mfa_token: "{{ mfa_code }}"
+            aws_access_key: "{{ static_aws_access_key }}"
+            aws_secret_key: "{{ static_aws_secret_key }}"
+          register: session_creds
+          changed_when: False
+          no_log: True
+          run_once: True
+        - name: aws_sts_token.yaml
+          template:
+            src: templates/aws_sts_token.yaml.j2
+            dest: "{{ inventory_dir }}/group_vars/aws_control/aws_sts_token.yaml"
+            mode: 0600
+          no_log: True
+          run_once: True
+        - name: "Load STS Token Facts"
+          include_vars:
+            file: "{{ inventory_dir }}/group_vars/aws_control/aws_sts_token.yaml"
+          no_log: True
+      when: "not hostvars['localhost'].sts_token_file_info.files|length|bool"
+    - name: Reset static aws creds
+      set_fact:
+        static_aws_access_key: PLACEHOLDER
+        static_aws_secret_key: PLACEHOLDER
+        vault_static_aws_access_key: PLACEHOLDER
+        vault_static_aws_secret_key: PLACEHOLDER

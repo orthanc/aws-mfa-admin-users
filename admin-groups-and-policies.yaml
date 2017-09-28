@@ -1,0 +1,46 @@
+---
+- import_playbook: obtain_session_token.yaml
+  vars:
+    aws_default_region: "{{ aws_connect_region }}"
+    limit_hosts: localhost
+- hosts: localhost
+  gather_facts: False
+  tasks:
+    - iam_managed_policy:
+        policy_name: "{{ item.key }}"
+        policy_description: "{{ item.value }}"
+        policy: "{{ lookup('template', 'templates/iam_policy/' + item.key + '.json.j2') }}"
+        state: present
+        region: "{{ aws_connect_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"
+      with_dict:
+        require_https: >-
+          Require HTTPS access for any use of resources.
+          This is actually implemented as denying any HTTP access.
+          This is generally applied as a safety precaution to prevent
+          accidental insecure usage.
+        require_mfa: >-
+          Require multi-factor authentication for any usage of any service.
+          This means that any automation must first obtain temporary credentials
+          from STS with a valid MFA token rather than directly using the access
+          keys.
+          This is valid to apply to an interactive user as well as long as the
+          user is required to use an MFA token to log in.
+      loop_control:
+        label: "{{ item.key }}"
+    - name: "Administrator Group"
+      iam_group:
+        name: Administrator
+        managed_policy:
+          - AdministratorAccess
+          - require_https
+          - require_mfa
+        purge_policy: True
+        purge_users: False
+        state: present
+        region: "{{ aws_connect_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"

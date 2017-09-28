@@ -1,5 +1,0 @@
----
-# The AWS authentication details used when deploying and destroying infrastructure.
-# Once set, this file should be encrypted with ansible-vault
-vault_static_aws_access_key: ACCESS_KEY
-vault_static_aws_secret_key: SECRET_KEY
