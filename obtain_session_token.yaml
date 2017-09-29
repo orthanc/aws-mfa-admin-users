@@ -43,14 +43,13 @@
             mode: 0600
           no_log: True
           run_once: True
-        - name: "Load STS Token Facts"
+        - name: "Load New STS Token Facts"
           include_vars:
             file: "{{ inventory_dir }}/group_vars/aws_control/aws_sts_token.yaml"
           no_log: True
       when: "not hostvars['localhost'].sts_token_file_info.files|length|bool"
-    - name: Reset static aws creds
-      set_fact:
-        static_aws_access_key: PLACEHOLDER
-        static_aws_secret_key: PLACEHOLDER
-        vault_static_aws_access_key: PLACEHOLDER
-        vault_static_aws_secret_key: PLACEHOLDER
+    - name: "Load STS Token Facts"
+      include_vars:
+        file: "{{ inventory_dir }}/group_vars/aws_control/aws_sts_token.yaml"
+      no_log: True
+      when: "secure_token is not defined"
