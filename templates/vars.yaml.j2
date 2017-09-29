@@ -1,7 +1,4 @@
 ---
-static_aws_access_key: {{ '"{{ vault_static_aws_access_key }}"' }}
-static_aws_secret_key: {{ '"{{ vault_static_aws_secret_key }}"' }}
-
 aws_user_arn: "{{ aws_creds_user_arn }}"
 aws_account: "{{ aws_creds_user_arn|replace('arn:aws:iam::', '')|regex_replace(':user/.*$') }}"
 mfa_token_arn: "{{ aws_creds_user_arn|replace('user/', 'mfa/') }}"
