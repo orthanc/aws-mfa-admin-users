@@ -12,8 +12,11 @@ aws_allowed_regions:
 # The region to connect to to work with IAM
 aws_connect_region: us-west-1
 
+# The id of the AWS account, this is used to build ARNs
+aws_account: ACCOUNT_ID
+
 # The ARN of the MFA token of the admin user that's used to create other users
-mfa_token_arn: arn:aws:iam::ACCOUNT_ID:mfa/USER_NAME
+mfa_token_arn: arn:aws:iam::{{ aws_account }}:mfa/USER_NAME
 
 # The vault file containing the static aws access keys used to obtain a STS
 # token using Multi-Factor Authentication

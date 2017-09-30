@@ -1,4 +1,4 @@
 ---
 aws_user_arn: "{{ aws_creds_user_arn }}"
-aws_account: "{{ aws_creds_user_arn|replace('arn:aws:iam::', '')|regex_replace(':user/.*$') }}"
+aws_account: "{{ aws_account }}"
 mfa_token_arn: "{{ aws_creds_user_arn|replace('user/', 'mfa/') }}"

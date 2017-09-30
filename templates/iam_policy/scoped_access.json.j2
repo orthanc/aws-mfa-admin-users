@@ -8,8 +8,8 @@
       "Resource": [
         "arn:aws:s3:::{{ env_prefix }}-*"
         {% for region in aws_allowed_regions %},
-        "arn:aws:sqs:{{ region }}:*:{{ env_prefix }}-*",
-        "arn:aws:sns:{{ region }}:*:{{ env_prefix }}-*"
+        "arn:aws:sqs:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*",
+        "arn:aws:sns:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*"
         {% endfor %}
       ]
     },
@@ -51,10 +51,10 @@
         "iam:UpdateUser"
       ],
       "Resource": [
-        "arn:aws:iam::*:group/{{ env_prefix }}-*",
-        "arn:aws:iam::*:instance-profile/{{ env_prefix }}-*",
-        "arn:aws:iam::*:user/{{ env_prefix }}-*",
-        "arn:aws:iam::*:policy/{{ env_prefix }}-*"
+        "arn:aws:iam::{{ aws_account }}:group/{{ env_prefix }}-*",
+        "arn:aws:iam::{{ aws_account }}:instance-profile/{{ env_prefix }}-*",
+        "arn:aws:iam::{{ aws_account }}:user/{{ env_prefix }}-*",
+        "arn:aws:iam::{{ aws_account }}:policy/{{ env_prefix }}-*"
       ]
     }
   ]
