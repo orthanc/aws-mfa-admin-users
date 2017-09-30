@@ -9,6 +9,17 @@ aws_allowed_regions:
   - ap-southeast-2
   - ap-southeast-3
 
+# The regions to allow SES email services in, this is kept separate from allowed_regions
+# because SES is in a very limited number of regions so is quite likely to be different
+# from the main regions used for the environment
+ses_allowed_regions:
+  - us-east-1
+
+# The identities (emails or domains) to allow use of within the ses_allowed_regions
+ses_allowed_identities:
+  - example@example.com
+  - example.org
+
 # The region to connect to to work with IAM
 aws_connect_region: us-west-1
 

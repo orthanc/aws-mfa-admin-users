@@ -1,0 +1,23 @@
+---
+- import_playbook: obtain_session_token.yaml
+- hosts: localhost
+  gather_facts: False
+  tasks:
+    - name: "Confirm Delete"
+      pause:
+        prompt: "Are you sure you want to delete identities {{ ses_allowed_identities|join(', ') }} ? Type YES to confirm."
+      register: confirm_prompt
+      run_once: True
+    - fail:
+      when: confirm_prompt.user_input != 'YES'
+      run_once: True
+    - ses_email_identity:
+        email: "{{ item[0] }}"
+        state: absent
+        region: "{{ item[1] }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"
+      with_nested:
+        - "{{ ses_allowed_identities }}"
+        - "{{ ses_allowed_regions }}"

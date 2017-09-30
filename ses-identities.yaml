@@ -1,0 +1,15 @@
+---
+- import_playbook: obtain_session_token.yaml
+- hosts: localhost
+  gather_facts: False
+  tasks:
+    - ses_identity:
+        identity: "{{ item[0] }}"
+        state: present
+        region: "{{ item[1] }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"
+      with_nested:
+        - "{{ ses_allowed_identities }}"
+        - "{{ ses_allowed_regions }}"

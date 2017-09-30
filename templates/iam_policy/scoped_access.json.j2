@@ -12,6 +12,12 @@
         "arn:aws:sqs:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*",
         "arn:aws:sns:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*"
 {%- endfor %}
+{% for region in ses_allowed_regions %}
+  {%- for identity in ses_allowed_identities -%}
+        ,
+        "arn:aws:ses:{{ region }}:{{ aws_account }}:identity/{{ identity }}"
+  {%- endfor %}
+{% endfor %}
 
       ]
     },
