@@ -1,7 +1,5 @@
 ---
 - import_playbook: obtain_session_token.yaml
-  vars:
-    aws_default_region: "{{ aws_connect_region }}"
 - hosts: aws_user
   gather_facts: False
   tasks:

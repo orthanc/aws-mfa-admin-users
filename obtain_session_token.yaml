@@ -27,7 +27,7 @@
           run_once: True
         - sts_session_token:
             duration_seconds: 4500
-            region: "{{ aws_default_region }}"
+            region: "{{ aws_connect_region|default(aws_default_region) }}"
             mfa_serial_number: "{{ mfa_token_arn }}"
             mfa_token: "{{ mfa_code }}"
             aws_access_key: "{{ static_aws_access_key }}"

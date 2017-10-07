@@ -1,7 +1,6 @@
 ---
 - import_playbook: obtain_session_token.yaml
   vars:
-    aws_default_region: "{{ aws_connect_region }}"
     limit_hosts: localhost
 - hosts: localhost
   gather_facts: False
