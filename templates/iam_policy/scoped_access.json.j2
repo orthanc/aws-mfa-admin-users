@@ -16,6 +16,36 @@
       ]
     },
     {
+      "Effect": "Allow",
+{# Allow adding and removing limited policies from roles, users and groups. #}
+      "Action": [
+        "iam:AttachGroupPolicy",
+        "iam:AttachRolePolicy",
+        "iam:AttachUserPolicy",
+        "iam:DetachGroupPolicy",
+        "iam:DetachRolePolicy",
+        "iam:DetachUserPolicy"
+      ],
+      "Resource": [
+        "arn:aws:iam::{{ aws_account }}:group/{{ env_prefix }}-*",
+        "arn:aws:iam::{{ aws_account }}:user/{{ env_prefix }}-*",
+        "arn:aws:iam::{{ aws_account }}:role/{{ env_prefix }}-*"
+      ],
+      "Condition": {
+        "ArnEquals": {
+          "iam:PolicyArn": [
+{# Allow policies prefixed with the env prefix, these are used for policies that must be created by the overall admin
+   to grant access to resources where we can't just allow the scoped admin to use resource policies.
+   e.g. Simple Email Service does not support fine grained controls on updating sender policy, so we must use IAM. #}
+            "arn:aws:iam::{{ aws_account }}:policy/{{ env_prefix }}-*",
+{# Allow the basic security check policies that don't grant access to any particular resources. #}
+            "arn:aws:iam::{{ aws_account }}:policy/require_https",
+            "arn:aws:iam::{{ aws_account }}:policy/require_mfa"
+          ]
+        }
+      }
+    },
+    {
 {# List operations on all resources as needed for ansible operations. #}
       "Effect": "Allow",
       "Action": [
@@ -34,22 +64,33 @@
       "Action": [
         "iam:ChangePassword",
         "iam:CreateAccessKey",
+        "iam:CreateGroup",
+        "iam:CreateRole",
+        "iam:CreateServiceLinkedRole",
         "iam:CreateUser",
         "iam:DeleteAccessKey",
+        "iam:DeleteGroup",
+        "iam:DeleteRole",
+        "iam:DeleteServiceLinkedRole",
         "iam:DeleteUser",
         "iam:GetInstanceProfile",
         "iam:GetGroup",
         "iam:GetLoginProfile",
         "iam:GetPolicy",
         "iam:GetPolicyVersion",
+        "iam:GetRole",
         "iam:GetUser",
         "iam:ListAccessKeys",
         "iam:ListAttachedUserPolicies",
         "iam:ListGroupsForUser",
+        "iam:ListGroupPolicies",
         "iam:ListMFADevices",
         "iam:ListPolicyVersions",
+        "iam:ListRolePolicies",
         "iam:ListUserPolicies",
         "iam:UpdateAccessKey",
+        "iam:UpdateGroup",
+        "iam:UpdateRoleDescription",
         "iam:UpdateUser"
       ],
       "Resource": [
