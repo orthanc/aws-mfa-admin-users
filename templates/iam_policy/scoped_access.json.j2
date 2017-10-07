@@ -2,19 +2,21 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-## Full Access to allowed resources prefixed with the environment prefix.
+{# Full Access to allowed resources prefixed with the environment prefix. #}
       "Effect": "Allow",
       "Action": "*",
       "Resource": [
         "arn:aws:s3:::{{ env_prefix }}-*"
-        {% for region in aws_allowed_regions %},
+{%- for region in aws_allowed_regions -%}
+        ,
         "arn:aws:sqs:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*",
         "arn:aws:sns:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*"
-        {% endfor %}
+{%- endfor %}
+
       ]
     },
     {
-## List operations on all resources as needed for ansible operations.
+{# List operations on all resources as needed for ansible operations. #}
       "Effect": "Allow",
       "Action": [
         "iam:ListGroups",
@@ -26,8 +28,8 @@
       "Resource": "*"
     },
     {
-## Very Limited IAM permissions, the goal is to allow creation of users and creds
-## but not allow ways to get access to items without the environment prefix.
+{# Very Limited IAM permissions, the goal is to allow creation of users and creds
+   but not allow ways to get access to items without the environment prefix. #}
       "Effect": "Allow",
       "Action": [
         "iam:ChangePassword",
