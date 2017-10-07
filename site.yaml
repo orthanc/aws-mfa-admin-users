@@ -1,0 +1,4 @@
+---
+- import_playbook: obtain_session_token.yaml
+- import_playbook: admin-groups-and-policies.yaml
+- import_playbook: env-scoped-admin-users.yaml
