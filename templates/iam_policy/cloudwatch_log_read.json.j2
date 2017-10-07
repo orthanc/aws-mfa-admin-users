@@ -1,0 +1,19 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:GetLogEvents"
+      ],
+      "Resource": [
+{% for region in aws_allowed_regions %}
+        "arn:aws:logs:{{ region }}:{{ aws_account }}:log-group:{{ item[0].log_group }}"{% if not loop.last %},{% endif %}
+
+{% endfor %}
+      ]
+    }
+  ]
+}

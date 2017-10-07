@@ -9,6 +9,9 @@
         "arn:aws:s3:::{{ env_prefix }}-*"
 {%- for region in aws_allowed_regions -%}
         ,
+        "arn:aws:lambda:{{ region }}:{{ aws_account }}:function:{{ env_prefix }}-*",
+        "arn:aws:logs:{{ region }}:{{ aws_account }}:log-group:/{{ env_prefix }}-*",
+        "arn:aws:logs:{{ region }}:{{ aws_account }}:log-group:/aws/lambda/{{ env_prefix }}-*",
         "arn:aws:sqs:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*",
         "arn:aws:sns:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*"
 {%- endfor %}
@@ -51,6 +54,7 @@
       "Action": [
         "iam:ListGroups",
         "iam:ListInstanceProfiles",
+        "iam:ListPolicies",
         "iam:ListRoles",
         "iam:ListUsers",
         "sns:ListTopics"
@@ -62,14 +66,17 @@
    but not allow ways to get access to items without the environment prefix. #}
       "Effect": "Allow",
       "Action": [
+        "iam:AddRoleToInstanceProfile",
         "iam:ChangePassword",
         "iam:CreateAccessKey",
         "iam:CreateGroup",
+        "iam:CreateInstanceProfile",
         "iam:CreateRole",
         "iam:CreateServiceLinkedRole",
         "iam:CreateUser",
         "iam:DeleteAccessKey",
         "iam:DeleteGroup",
+        "iam:DeleteInstanceProfile",
         "iam:DeleteRole",
         "iam:DeleteServiceLinkedRole",
         "iam:DeleteUser",
@@ -81,14 +88,20 @@
         "iam:GetRole",
         "iam:GetUser",
         "iam:ListAccessKeys",
+        "iam:ListAttachedGroupPolicies",
+        "iam:ListAttachedRolePolicies",
         "iam:ListAttachedUserPolicies",
         "iam:ListGroupsForUser",
         "iam:ListGroupPolicies",
+        "iam:ListInstanceProfilesForRole",
         "iam:ListMFADevices",
         "iam:ListPolicyVersions",
         "iam:ListRolePolicies",
         "iam:ListUserPolicies",
+        "iam:PassRole",
+        "iam:RemoveRoleFromInstanceProfile",
         "iam:UpdateAccessKey",
+        "iam:UpdateAssumeRolePolicy",
         "iam:UpdateGroup",
         "iam:UpdateRoleDescription",
         "iam:UpdateUser"
@@ -96,8 +109,9 @@
       "Resource": [
         "arn:aws:iam::{{ aws_account }}:group/{{ env_prefix }}-*",
         "arn:aws:iam::{{ aws_account }}:instance-profile/{{ env_prefix }}-*",
-        "arn:aws:iam::{{ aws_account }}:user/{{ env_prefix }}-*",
-        "arn:aws:iam::{{ aws_account }}:policy/{{ env_prefix }}-*"
+        "arn:aws:iam::{{ aws_account }}:policy/{{ env_prefix }}-*",
+        "arn:aws:iam::{{ aws_account }}:role/{{ env_prefix }}-*",
+        "arn:aws:iam::{{ aws_account }}:user/{{ env_prefix }}-*"
       ]
     }
   ]

@@ -3,6 +3,22 @@
 - hosts: aws_user
   gather_facts: False
   tasks:
+    - iam_managed_policy:
+        policy_name: "{{ env_prefix }}-{{ item[0].name }}-{{ item[1] }}"
+        policy_description: "Provide {{ item[1] }} access to {{ item[0].name }} in {{ env_prefix }} environments."
+        policy: "{{ lookup('template', 'templates/iam_policy/cloudwatch_log_' + item[1] + '.json.j2') }}"
+        state: present
+        region: "{{ aws_connect_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"
+      with_nested:
+        -
+          - name: logs
+            log_group: "/{{ env_prefix }}-*"
+          - name: lambda-logs
+            log_group: "/aws/lambda/{{ env_prefix }}-*"
+        - [write, read]
     - name: "Environment LimitedAdministrator Group"
       iam_group:
         name: "{{ env_prefix }}-LimitedAdministrator"
