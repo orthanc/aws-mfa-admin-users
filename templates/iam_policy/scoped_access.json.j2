@@ -12,8 +12,8 @@
         "arn:aws:lambda:{{ region }}:{{ aws_account }}:function:{{ env_prefix }}-*",
         "arn:aws:logs:{{ region }}:{{ aws_account }}:log-group:/{{ env_prefix }}-*",
         "arn:aws:logs:{{ region }}:{{ aws_account }}:log-group:/aws/lambda/{{ env_prefix }}-*",
-        "arn:aws:sqs:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*",
-        "arn:aws:sns:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*"
+        "arn:aws:sns:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*",
+        "arn:aws:sqs:{{ region }}:{{ aws_account }}:{{ env_prefix }}-*"
 {%- endfor %}
 
       ]
@@ -31,8 +31,8 @@
       ],
       "Resource": [
         "arn:aws:iam::{{ aws_account }}:group/{{ env_prefix }}-*",
-        "arn:aws:iam::{{ aws_account }}:user/{{ env_prefix }}-*",
-        "arn:aws:iam::{{ aws_account }}:role/{{ env_prefix }}-*"
+        "arn:aws:iam::{{ aws_account }}:role/{{ env_prefix }}-*",
+        "arn:aws:iam::{{ aws_account }}:user/{{ env_prefix }}-*"
       ],
       "Condition": {
         "ArnEquals": {
@@ -56,8 +56,8 @@
         "iam:ListInstanceProfiles",
         "iam:ListPolicies",
         "iam:ListRoles",
-        "iam:ListUsers",
-        "sns:ListTopics"
+        "sns:ListTopics",
+        "iam:ListUsers"
       ],
       "Resource": "*"
     },
@@ -80,8 +80,8 @@
         "iam:DeleteRole",
         "iam:DeleteServiceLinkedRole",
         "iam:DeleteUser",
-        "iam:GetInstanceProfile",
         "iam:GetGroup",
+        "iam:GetInstanceProfile",
         "iam:GetLoginProfile",
         "iam:GetPolicy",
         "iam:GetPolicyVersion",
@@ -91,8 +91,8 @@
         "iam:ListAttachedGroupPolicies",
         "iam:ListAttachedRolePolicies",
         "iam:ListAttachedUserPolicies",
-        "iam:ListGroupsForUser",
         "iam:ListGroupPolicies",
+        "iam:ListGroupsForUser",
         "iam:ListInstanceProfilesForRole",
         "iam:ListMFADevices",
         "iam:ListPolicyVersions",
