@@ -1,0 +1,4 @@
+---
+- import_playbook: obtain_session_token.yaml
+- import_playbook: destroy-scoped-admin-users.yaml
+- import_playbook: destroy-cloudwatch-policies.yaml

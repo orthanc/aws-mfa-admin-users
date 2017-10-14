@@ -10,7 +10,7 @@
       ],
       "Resource": [
 {% for region in aws_allowed_regions %}
-        "arn:aws:logs:{{ region }}:{{ aws_account }}:log-group:{{ item[0].log_group }}"{% if not loop.last %},{% endif %}
+        "arn:aws:logs:{{ region }}:{{ aws_account }}:log-group:{{ log_group }}"{% if not loop.last %},{% endif %}
 
 {% endfor %}
       ]

@@ -1,0 +1,18 @@
+---
+- import_playbook: obtain_session_token.yaml
+- hosts: aws_log_group
+  gather_facts: False
+  tasks:
+    - name: Cloudwatch Logs Access Policy
+      iam_managed_policy:
+        policy_name: "{{ env_prefix }}-{{ inventory_hostname }}-{{ item }}"
+        policy_description: "Provide {{ item }} access to {{ inventory_hostname }} in {{ env_prefix }} environments."
+        policy: "{{ lookup('template', 'templates/iam_policy/cloudwatch_log_' + item + '.json.j2') }}"
+        state: present
+        region: "{{ aws_connect_region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        security_token: "{{ security_token }}"
+      with_items:
+        - write
+        - read

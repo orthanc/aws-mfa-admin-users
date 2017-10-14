@@ -4,5 +4,10 @@ localhost
 [aws_user]
 example-user
 
+[aws_log_group]
+logs log_group="/{{ env_prefix }}-*"
+lambda-logs log_group="/aws/lambda/{{ env_prefix }}-*"
+
 [aws_control:children]
+aws_log_group
 aws_user
